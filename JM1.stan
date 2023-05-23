@@ -4,7 +4,6 @@
 // - Interval-censoring for survival data
 // - Shared current value
 
-
 // THREE-PARAMETER LOGISTIC SPECIFICATION
 functions{               
   vector nonlinear_predictor(int[] IDL, vector time, vector theta, matrix bi){
@@ -19,7 +18,6 @@ functions{
       return out;
   }
 }
-
 
 // Legend:
 // 0: censored/immune women (normal group)
@@ -45,7 +43,6 @@ data{
   vector[K] wk;
 }
 
-
 parameters{
   vector[3] theta;
   real beta;
@@ -57,7 +54,6 @@ parameters{
   matrix[n,3] bi;
 }
 
-
 transformed parameters{
   matrix[n,3] a;
   a[,1] = exp(theta[1] + bi[,1]);
@@ -65,7 +61,6 @@ transformed parameters{
   a[,3] = exp(theta[3] + bi[,3]);
   real eta = 1/(1 + exp(-beta));
 }
-
 
 model{
   vector[N] nonlinpred;
@@ -76,14 +71,11 @@ model{
   vector[n1] sLeft;
   vector[n1] sRight;
 
-
   // LOG-LIKELIHOOD FOR LONGITUDINAL SUBMODEL  
   // Nonlinear predictor
   nonlinpred = nonlinear_predictor(IDL, time, theta, bi);
-
   // Longitudinal Normal log-likelihood
   target += normal_lpdf(y | nonlinpred, sqrt(sigma2_e));
-
 
   // LOG-LIKELIHOOD FOR SURVIVAL SUBMODEL
   // Immune women (normal group)
@@ -118,7 +110,6 @@ model{
       target += log(1-eta) + log( sLeft[i] - sRight[i] );
   }
 
-
   // LOG-PRIORS
   // Longitudinal fixed effects
   target += normal_lpdf(theta | 0, 10);
@@ -145,7 +136,6 @@ model{
   target += inv_gamma_lpdf(sigma2_e | 0.1, 0.1);
 
 }
-
 
 // LOG-LIKELIHOOD FOR LEAVE-ONE-OUT CROSS-VALIDATION (LOO-CV)
 generated quantities{
