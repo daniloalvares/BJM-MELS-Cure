@@ -8,12 +8,12 @@
 functions{               
   vector nonlinear_predictor(int[] IDL, vector time, vector theta, matrix bi){
       int N = num_elements(time);         
-      vector[N] a1 = exp(theta[1] + bi[IDL, 1]);
-      vector[N] a2 = exp(theta[2] + bi[IDL, 2]);
-      vector[N] a3 = exp(theta[3] + bi[IDL, 3]);
+      vector[N] a1 = exp( theta[1] + bi[IDL, 1] );
+      vector[N] a2 = exp( theta[2] + bi[IDL, 2] );
+      vector[N] a3 = exp( theta[3] + bi[IDL, 3] );
       vector[N] out;
        
-      for(j in 1:N){ out[j] = a1[j]/(1+exp(-(time[j]-a2[j])/a3[j])); }
+      for(j in 1:N){ out[j] = a1[j] / (1+exp(-(time[j]-a2[j]) / a3[j])); }
 
       return out;
   }
@@ -56,10 +56,10 @@ parameters{
 
 transformed parameters{
   matrix[n, 3] a;
-  a[, 1] = exp(theta[1] + bi[, 1]);
-  a[, 2] = exp(theta[2] + bi[, 2]);
-  a[, 3] = exp(theta[3] + bi[, 3]);
-  real eta = 1/(1 + exp(-beta));
+  a[, 1] = exp( theta[1] + bi[, 1] );
+  a[, 2] = exp( theta[2] + bi[, 2] );
+  a[, 3] = exp( theta[3] + bi[, 3] );
+  real eta = 1 / (1 + exp(-beta));
 }
 
 model{
@@ -82,8 +82,8 @@ model{
   for(i in 1:n0){
       // Hazard function at integration points
       for(k in 1:K){
-          hCens[i, k] = phi * pow(tCens[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID0[i], 1]/(1+exp(-((tCens[i] / 2 * (xk[k] + 1))-a[ID0[i], 2])/a[ID0[i], 3])) );
+          hCens[i, k] = phi * pow(tCens[i] / 2 * (xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID0[i], 1] / (1+exp(-((tCens[i] / 2 * (xk[k] + 1))-a[ID0[i], 2]) / a[ID0[i], 3])) );
       }
 
       // Survival function with Gauss-Legendre quadrature
@@ -96,11 +96,11 @@ model{
   for(i in 1:n1){
       // Left and right hazard functions at integration points
       for(k in 1:K){
-          hLeft[i, k] = phi * pow(tLeft[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID1[i], 1]/(1+exp(-((tLeft[i] / 2 * (xk[k] + 1))-a[ID1[i], 2])/a[ID1[i], 3])) );
+          hLeft[i, k] = phi * pow(tLeft[i] / 2 * (xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID1[i], 1] / (1+exp(-((tLeft[i] / 2 * (xk[k] + 1))-a[ID1[i], 2]) / a[ID1[i], 3])) );
 
-          hRight[i, k] = phi * pow(tRight[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID1[i], 1]/(1+exp(-((tRight[i] / 2 * (xk[k] + 1))-a[ID1[i], 2])/a[ID1[i], 3])) );
+          hRight[i, k] = phi * pow(tRight[i] / 2 * (xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID1[i], 1] / (1+exp(-((tRight[i] / 2 * (xk[k] + 1))-a[ID1[i], 2]) / a[ID1[i], 3])) );
       }
 
       // Left and right survival functions with Gauss-Legendre quadrature
@@ -156,8 +156,8 @@ generated quantities{
   for(i in 1:n0){
       // Hazard function at integration points
       for(k in 1:K){
-          hCens[i, k] = phi * pow(tCens[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID0[i], 1]/(1+exp(-((tCens[i] / 2 * (xk[k] + 1))-a[ID0[i], 2])/a[ID0[i], 3])) );
+          hCens[i, k] = phi * pow(tCens[i] / 2 * (xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID0[i], 1] / (1+exp(-((tCens[i] / 2 * (xk[k] + 1))-a[ID0[i], 2]) / a[ID0[i], 3])) );
       }
 
       // Survival function with Gauss-Legendre quadrature
@@ -170,11 +170,11 @@ generated quantities{
   for(i in 1:n1){
       // Left and right hazard functions at integration points
       for(k in 1:K){
-          hLeft[i, k] = phi * pow(tLeft[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID1[i], 1]/(1+exp(-((tLeft[i] / 2 * (xk[k] + 1))-a[ID1[i], 2])/a[ID1[i], 3])) );
+          hLeft[i, k] = phi * pow(tLeft[i] / 2 * (xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID1[i], 1] / (1+exp(-((tLeft[i] / 2 * (xk[k] + 1))-a[ID1[i], 2]) / a[ID1[i], 3])) );
 
-          hRight[i, k] = phi * pow(tRight[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID1[i], 1]/(1+exp(-((tRight[i] / 2 * (xk[k] + 1))-a[ID1[i], 2])/a[ID1[i], 3])) );
+          hRight[i, k] = phi * pow(tRight[i] / 2 * (xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID1[i], 1] / (1+exp(-((tRight[i] / 2 * (xk[k] + 1))-a[ID1[i], 2]) / a[ID1[i], 3])) );
       }
 
       // Left and right survival functions with Gauss-Legendre quadrature
