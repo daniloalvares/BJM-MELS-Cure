@@ -1,4 +1,4 @@
-// Joint model (3.1)-(3.2)
+// Joint model (1)-(2)
 // - Three-parameter logistic model for longitudinal data
 // - Mixture cure model for survival data
 // - Interval-censoring for survival data
@@ -8,9 +8,9 @@
 functions{               
   vector nonlinear_predictor(int[] IDL, vector time, vector theta, matrix bi){
       int N = num_elements(time);         
-      vector[N] a1 = exp(theta[1] + bi[IDL,1]);
-      vector[N] a2 = exp(theta[2] + bi[IDL,2]);
-      vector[N] a3 = exp(theta[3] + bi[IDL,3]);
+      vector[N] a1 = exp(theta[1] + bi[IDL, 1]);
+      vector[N] a2 = exp(theta[2] + bi[IDL, 2]);
+      vector[N] a3 = exp(theta[3] + bi[IDL, 3]);
       vector[N] out;
        
       for(j in 1:N){ out[j] = a1[j]/(1+exp(-(time[j]-a2[j])/a3[j])); }
@@ -51,23 +51,23 @@ parameters{
   real<lower=0> phi;
   real<lower=0> sigma2_e;
   cov_matrix[3] Sigma;
-  matrix[n,3] bi;
+  matrix[n, 3] bi;
 }
 
 transformed parameters{
-  matrix[n,3] a;
-  a[,1] = exp(theta[1] + bi[,1]);
-  a[,2] = exp(theta[2] + bi[,2]);
-  a[,3] = exp(theta[3] + bi[,3]);
+  matrix[n, 3] a;
+  a[, 1] = exp(theta[1] + bi[, 1]);
+  a[, 2] = exp(theta[2] + bi[, 2]);
+  a[, 3] = exp(theta[3] + bi[, 3]);
   real eta = 1/(1 + exp(-beta));
 }
 
 model{
   vector[N] nonlinpred;
-  matrix[n0,K] hCens;
+  matrix[n0, K] hCens;
   vector[n0] sCens;
-  matrix[n1,K] hLeft;
-  matrix[n1,K] hRight;
+  matrix[n1, K] hLeft;
+  matrix[n1, K] hRight;
   vector[n1] sLeft;
   vector[n1] sRight;
 
@@ -82,8 +82,8 @@ model{
   for(i in 1:n0){
       // Hazard function at integration points
       for(k in 1:K){
-          hCens[i,k] = phi * pow(tCens[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID0[i],1]/(1+exp(-((tCens[i] / 2 * (xk[k] + 1))-a[ID0[i],2])/a[ID0[i],3])) );
+          hCens[i, k] = phi * pow(tCens[i]/2*(xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID0[i], 1]/(1+exp(-((tCens[i] / 2 * (xk[k] + 1))-a[ID0[i], 2])/a[ID0[i], 3])) );
       }
 
       // Survival function with Gauss-Legendre quadrature
@@ -96,11 +96,11 @@ model{
   for(i in 1:n1){
       // Left and right hazard functions at integration points
       for(k in 1:K){
-          hLeft[i,k] = phi * pow(tLeft[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID1[i],1]/(1+exp(-((tLeft[i] / 2 * (xk[k] + 1))-a[ID1[i],2])/a[ID1[i],3])) );
+          hLeft[i, k] = phi * pow(tLeft[i]/2*(xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID1[i], 1]/(1+exp(-((tLeft[i] / 2 * (xk[k] + 1))-a[ID1[i], 2])/a[ID1[i], 3])) );
 
-          hRight[i,k] = phi * pow(tRight[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID1[i],1]/(1+exp(-((tRight[i] / 2 * (xk[k] + 1))-a[ID1[i],2])/a[ID1[i],3])) );
+          hRight[i, k] = phi * pow(tRight[i]/2*(xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID1[i], 1]/(1+exp(-((tRight[i] / 2 * (xk[k] + 1))-a[ID1[i], 2])/a[ID1[i], 3])) );
       }
 
       // Left and right survival functions with Gauss-Legendre quadrature
@@ -127,13 +127,13 @@ model{
   target += cauchy_lpdf(phi | 0, 1); 
 
   // Random-effects variance-covariance matrix
-  Sigma ~ inv_wishart(4, diag_matrix(rep_vector(1,3)));
+  Sigma ~ inv_wishart(4, diag_matrix(rep_vector(1, 3)));
 
   // Random-effects
-  for(i in 1:n){ target += multi_normal_lpdf(bi[i,1:3] | rep_vector(0,3), Sigma); }
+  for(i in 1:n){ target += multi_normal_lpdf(bi[i, 1:3] | rep_vector(0, 3), Sigma); }
 
   // Error variance
-  target += inv_gamma_lpdf(sigma2_e | 0.1, 0.1);
+  target += cauchy_lpdf(sigma2_e | 0, 1);
 
 }
 
@@ -142,10 +142,10 @@ generated quantities{
   vector[n] log_lik;
   vector[N] nonlinpred = nonlinear_predictor(IDL, time, theta, bi);
   vector[N] longit;
-  matrix[n0,K] hCens;
+  matrix[n0, K] hCens;
   vector[n0] sCens;
-  matrix[n1,K] hLeft;
-  matrix[n1,K] hRight;
+  matrix[n1, K] hLeft;
+  matrix[n1, K] hRight;
   vector[n1] sLeft;
   vector[n1] sRight;
 
@@ -156,8 +156,8 @@ generated quantities{
   for(i in 1:n0){
       // Hazard function at integration points
       for(k in 1:K){
-          hCens[i,k] = phi * pow(tCens[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID0[i],1]/(1+exp(-((tCens[i] / 2 * (xk[k] + 1))-a[ID0[i],2])/a[ID0[i],3])) );
+          hCens[i, k] = phi * pow(tCens[i]/2*(xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID0[i], 1]/(1+exp(-((tCens[i] / 2 * (xk[k] + 1))-a[ID0[i], 2])/a[ID0[i], 3])) );
       }
 
       // Survival function with Gauss-Legendre quadrature
@@ -170,11 +170,11 @@ generated quantities{
   for(i in 1:n1){
       // Left and right hazard functions at integration points
       for(k in 1:K){
-          hLeft[i,k] = phi * pow(tLeft[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID1[i],1]/(1+exp(-((tLeft[i] / 2 * (xk[k] + 1))-a[ID1[i],2])/a[ID1[i],3])) );
+          hLeft[i, k] = phi * pow(tLeft[i]/2*(xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID1[i], 1]/(1+exp(-((tLeft[i] / 2 * (xk[k] + 1))-a[ID1[i], 2])/a[ID1[i], 3])) );
 
-          hRight[i,k] = phi * pow(tRight[i]/2*(xk[k]+1), phi-1) * exp( lambda +
-            alpha * a[ID1[i],1]/(1+exp(-((tRight[i] / 2 * (xk[k] + 1))-a[ID1[i],2])/a[ID1[i],3])) );
+          hRight[i, k] = phi * pow(tRight[i]/2*(xk[k]+1), phi-1) * exp( lambda +
+            alpha * a[ID1[i], 1]/(1+exp(-((tRight[i] / 2 * (xk[k] + 1))-a[ID1[i], 2])/a[ID1[i], 3])) );
       }
 
       // Left and right survival functions with Gauss-Legendre quadrature
