@@ -20,8 +20,8 @@ functions{
 }
 
 // Legend:
-// 0: censored/immune women (normal group)
-// 1: uncensored/susceptible women (abnormal group)
+// 0: normal group
+// 1: abnormal group
 
 data{
   int N;
@@ -78,7 +78,7 @@ model{
   target += normal_lpdf(y | nonlinpred, sqrt(sigma2_e));
 
   // LOG-LIKELIHOOD FOR SURVIVAL SUBMODEL
-  // Immune women (normal group)
+  // Normal group
   for(i in 1:n0){
       // Hazard function at integration points
       for(k in 1:K){
@@ -92,7 +92,7 @@ model{
       target += log( eta + (1-eta) * sCens[i] );
   }
 
-  // Susceptible women (abnormal group)
+  // Abnormal group
   for(i in 1:n1){
       // Left and right hazard functions at integration points
       for(k in 1:K){
@@ -152,7 +152,7 @@ generated quantities{
   for(j in 1:N){ longit[j] = normal_lpdf(y[j] | nonlinpred[j], sqrt(sigma2_e)); }
   for(i in 1:n){ log_lik[i] = sum(longit[start[i]:stop[i]]); }
 
-  // Immune women (normal group)
+  // Normal group
   for(i in 1:n0){
       // Hazard function at integration points
       for(k in 1:K){
@@ -166,7 +166,7 @@ generated quantities{
       log_lik[ID0[i]] = log_lik[ID0[i]] + log( eta + (1-eta) * sCens[i] );
   }
 
-  // Susceptible women (abnormal group)
+  // Abnormal group
   for(i in 1:n1){
       // Left and right hazard functions at integration points
       for(k in 1:K){
